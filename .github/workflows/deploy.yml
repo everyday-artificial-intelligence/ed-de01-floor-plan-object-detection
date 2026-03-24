@@ -2,6 +2,8 @@ name: Build & Push
 
 on:
   workflow_dispatch:
+  push:
+    branches: [feat/MCP-server]
 
 env:
   REGION: us-central1
