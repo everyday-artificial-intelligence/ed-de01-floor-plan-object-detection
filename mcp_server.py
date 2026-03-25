@@ -30,11 +30,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-_log_file = os.path.join(RUNTIME_DIR, "mcp_server.log")
-_file_handler = logging.FileHandler(_log_file)
-_file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-logging.getLogger().addHandler(_file_handler)
-logger.info("Logging to %s", _log_file)
 
 # --- Constants (mirrored from app.py) ---
 DOOR_DERP_PROMPT = (
