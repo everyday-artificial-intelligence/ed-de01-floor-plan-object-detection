@@ -1,4 +1,5 @@
 google-genai
+google-cloud-logging
 python-dotenv
 Pillow==10.3.0
 ultralytics==8.2.8

@@ -24,11 +24,10 @@ from ultralytics import YOLO
 
 load_dotenv()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-)
+import google.cloud.logging as gcp_logging
+gcp_logging.Client().setup_logging()
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 # --- Constants (mirrored from app.py) ---
@@ -198,6 +197,13 @@ def _build_review_results(raw_bboxes: list[list[int]]) -> list[dict]:
 
 
 @mcp.tool()
+def ping() -> str:
+    """Simple health check to verify the MCP server is reachable."""
+    logger.info("ping called")
+    return "pong"
+
+
+@mcp.tool()
 def detect_doors(image_path: str) -> list[dict]:
     """
     Detect doors in a floor plan image and return their bounding boxes and DERP values. Use to find derp values for a door.
@@ -313,5 +319,6 @@ def detect_doors(image_path: str) -> list[dict]:
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8080))
+    logger.info("MCP server starting on port %d", port)
     app = mcp.streamable_http_app()
     uvicorn.run(app, host="0.0.0.0", port=port, log_config=None)
