@@ -209,9 +209,8 @@ def detect_doors(image_path: str) -> list[dict]:
     Detect doors in a floor plan image and return their bounding boxes and DERP values. Use to find derp values for a door.
 
     Args:
-        image_path: Absolute macOS file path to the floor plan image (PNG or JPEG).
-            The user must provide this path explicitly. Do not guess or invent paths.
-            Example: /Users/tomedwards/Downloads/floorplan.png
+        image_path: Absolute path to the floor plan image (PNG or JPEG) on the shared volume.
+            Example: /shared/floorplan.png
 
     Returns:
         List of door objects, each with:
