@@ -3,4 +3,5 @@ python-dotenv
 Pillow==10.3.0
 ultralytics==8.2.8
 mcp[cli]>=1.6.0
+uvicorn
 httpx
