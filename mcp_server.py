@@ -54,6 +54,7 @@ DOOR_DERP_PROMPT = (
     "Each image is preceded by a text part formatted exactly as 'door_id: <value>'.\n"
     "Return JSON only and follow the provided schema exactly.\n"
     "In some cases the crops may not contain a door if that is the case return an object with unknown values for both fields immediately.\n"
+    "If you are even the slightest bit unsure about any fields mark them as needing review.\n"
     "Return one object for every supplied door crop, in the same order, reusing the exact door_id value.\n\n"
 
     "For each door determine:\n"
@@ -293,8 +294,8 @@ def _detect_doors_impl(image_path: str) -> list[dict]:
         raw_bboxes.append([x1, y1, x2, y2])
         logger.info("Door_%d bbox: [%d, %d, %d, %d]", i, x1, y1, x2, y2)
 
-        pad_x = int((x2 - x1) * 0.2)
-        pad_y = int((y2 - y1) * 0.2)
+        pad_x = int((x2 - x1) * 0.4)
+        pad_y = int((y2 - y1) * 0.4)
         cx1 = max(0, x1 - pad_x)
         cy1 = max(0, y1 - pad_y)
         cx2 = min(img_w, x2 + pad_x)
