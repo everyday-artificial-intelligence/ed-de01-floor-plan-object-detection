@@ -16,18 +16,27 @@ os.environ.setdefault("YOLO_CONFIG_DIR", YOLO_CONFIG_DIR)
 
 import httpx
 import PIL.Image
+
+# Floor plans can be very large; raise PIL's decompression bomb limit so they
+# load without warnings or errors. The images come from our own pipeline so
+# the DOS-guard is not needed here.
+PIL.Image.MAX_IMAGE_PIXELS = None
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from mcp.server.fastmcp import FastMCP
 import torch
-import torch.serialization
 from ultralytics import YOLO
-import ultralytics.nn.tasks
 
 # PyTorch 2.6+ changed torch.load to default weights_only=True, which blocks
-# loading YOLO checkpoints that contain custom ultralytics classes.
-torch.serialization.add_safe_globals([ultralytics.nn.tasks.DetectionModel])
+# loading YOLO checkpoints (they contain custom classes not on the safe list).
+# Patch torch.load so callers that don't specify weights_only (i.e. ultralytics)
+# fall back to False — safe here because best.pt is our own trusted model file.
+_orig_torch_load = torch.load
+def _torch_load_compat(f, *args, **kwargs):
+    kwargs.setdefault("weights_only", False)
+    return _orig_torch_load(f, *args, **kwargs)
+torch.load = _torch_load_compat
 
 load_dotenv()
 
