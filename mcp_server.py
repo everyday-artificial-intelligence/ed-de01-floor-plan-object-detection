@@ -20,7 +20,14 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from mcp.server.fastmcp import FastMCP
+import torch
+import torch.serialization
 from ultralytics import YOLO
+import ultralytics.nn.tasks
+
+# PyTorch 2.6+ changed torch.load to default weights_only=True, which blocks
+# loading YOLO checkpoints that contain custom ultralytics classes.
+torch.serialization.add_safe_globals([ultralytics.nn.tasks.DetectionModel])
 
 load_dotenv()
 
