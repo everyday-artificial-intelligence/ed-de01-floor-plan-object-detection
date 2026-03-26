@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import tempfile
+import time
 
 # MCP stdio servers must keep stdout clean; configure writable cache dirs up front
 # so library startup does not emit warnings about non-writable defaults.
@@ -16,6 +17,7 @@ os.environ.setdefault("YOLO_CONFIG_DIR", YOLO_CONFIG_DIR)
 
 import httpx
 import PIL.Image
+import PIL.ImageFile
 
 # Floor plans can be very large; raise PIL's decompression bomb limit so they
 # load without warnings or errors. The images come from our own pipeline so
@@ -242,6 +244,19 @@ def detect_doors(image_path: str) -> list[dict]:
         raise
 
 
+def _wait_for_file_ready(path: str, timeout: float = 30.0, interval: float = 0.5) -> None:
+    """Poll until the file size stops changing, indicating the write is complete."""
+    deadline = time.monotonic() + timeout
+    last_size = -1
+    while time.monotonic() < deadline:
+        size = os.path.getsize(path)
+        if size > 0 and size == last_size:
+            return
+        last_size = size
+        time.sleep(interval)
+    raise TimeoutError(f"File did not stabilise within {timeout}s: {path}")
+
+
 def _detect_doors_impl(image_path: str) -> list[dict]:
     gemini_api_key = os.environ.get("GEMINI_API_KEY")
     if not gemini_api_key:
@@ -251,7 +266,9 @@ def _detect_doors_impl(image_path: str) -> list[dict]:
         logger.error("detect_doors: file not found: %s", image_path)
         raise FileNotFoundError(f"Image file not found: {image_path}")
 
-    # Load image from path
+    # Wait for the file to finish writing by polling until size stabilizes
+    _wait_for_file_ready(image_path)
+
     image = PIL.Image.open(image_path).convert("RGB")
     img_w, img_h = image.size
     logger.info("Image loaded: %dx%d", img_w, img_h)
