@@ -219,12 +219,20 @@ def detect_doors(image_path: str) -> list[dict]:
           - derp: "LH" (left-hand), "RH" (right-hand), or "review"
     """
     logger.info("detect_doors called: %s", image_path)
+    try:
+        return _detect_doors_impl(image_path)
+    except Exception:
+        logger.exception("detect_doors: unhandled error for %s", image_path)
+        raise
 
+
+def _detect_doors_impl(image_path: str) -> list[dict]:
     gemini_api_key = os.environ.get("GEMINI_API_KEY")
     if not gemini_api_key:
         raise RuntimeError("GEMINI_API_KEY environment variable is not set.")
 
     if not os.path.isfile(image_path):
+        logger.error("detect_doors: file not found: %s", image_path)
         raise FileNotFoundError(f"Image file not found: {image_path}")
 
     # Load image from path
@@ -293,7 +301,8 @@ def detect_doors(image_path: str) -> list[dict]:
             analysed.extend(_analyse_doors(gemini_client, batch))
     except Exception:
         logger.exception(
-            "Gemini door analysis failed; returning YOLO detections with review DERP"
+            "detect_doors: Gemini door analysis failed for %s; returning YOLO detections with review DERP",
+            image_path,
         )
         return _build_review_results(raw_bboxes)
     finally:
