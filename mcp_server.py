@@ -50,22 +50,28 @@ logger.setLevel(logging.INFO)
 
 # --- Constants (mirrored from app.py) ---
 DOOR_DERP_PROMPT = (
-    "You will receive multiple door crop images.\n"
+    "You will receive multiple door crop images from an architectural floor plan.\n"
     "Each image is preceded by a text part formatted exactly as 'door_id: <value>'.\n"
     "Return JSON only and follow the provided schema exactly.\n"
-    "In some cases the crops may not contain a door if that is the case return an object with unknown values for both fields immediately.\n"
-    "If you are even the slightest bit unsure about any fields mark them as needing review.\n"
     "Return one object for every supplied door crop, in the same order, reusing the exact door_id value.\n\n"
+
+    "CRITICAL: A wrong answer is worse than unknown. If you are not highly confident in a field, you MUST use unknown. "
+    "Do not guess. An incorrect handedness result causes significant downstream errors.\n\n"
+
+    "Use unknown for a field if ANY of the following apply:\n"
+    "- The crop does not clearly contain a door symbol (arc + opening).\n"
+    "- The image is clipped, blurry, or too small to read clearly.\n"
+    "- Two or more doors are visible in the same crop.\n"
+    "- You can see multiple plausible answers for the field.\n"
+    "- You have any doubt at all.\n\n"
 
     "For each door determine:\n"
     "1. opening_side: which side of the crop contains the door opening relative to the image orientation. "
     "Use one of top, left, right, bottom, or unknown. "
-    "The opening will be an open gap between lines or maybe a thin line. "
-    "Two lines or a thick line signifies a wall, not the opening."
-    "If it is not clear which side the opening is on as multiple sides seem possible, mark opening_side as unknown.\n"
+    "The opening is an open gap between lines or a thin line where the door swings free. "
+    "Two parallel lines or a thick line indicates a wall, not the opening.\n"
     "2. arc_type: which clock-face quarter the arc sweeps through. "
     "Use one of 12_to_3, 3_to_6, 6_to_9, 9_to_12, or unknown.\n\n"
-    "If a door is ambiguous, include it and use unknown for the uncertain field.\n"
     "If two doors are present in a single door crop, mark both fields as unknown. Apply this if even a tiny bit of another door is visible."
 )
 GEMINI_MODEL = "gemini-3.1-pro-preview"
