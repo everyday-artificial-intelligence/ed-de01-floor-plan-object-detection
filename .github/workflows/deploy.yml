@@ -1,0 +1,32 @@
+name: Build & Push
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/MCP-server]
+
+env:
+  REGION: us-central1
+  PROJECT_ID: elitedoors-489322
+  IMAGE: us-central1-docker.pkg.dev/elitedoors-489322/elitedoors/python-mcp
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build and push
+        run: |
+          docker build -t ${{ env.IMAGE }}:${{ github.sha }} -t ${{ env.IMAGE }}:latest .
+          docker push ${{ env.IMAGE }}:${{ github.sha }}
+          docker push ${{ env.IMAGE }}:latest

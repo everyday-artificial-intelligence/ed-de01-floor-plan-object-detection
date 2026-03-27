@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.venv
+venv
+*.egg-info
+dist
+build
+WebUI.gif
+app.py
+setting.py
